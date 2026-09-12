@@ -18,6 +18,15 @@ When asked to build a new feature or product from a rough idea, follow this pipe
 marked **STOP** is a hard gate — do not write implementation code past it without an explicit
 approval in the chat.
 
+**Resuming across sessions.** Don't keep pipeline artifacts as flat files at the repo root. Use a
+versioned directory, `spec-to-prod/<N>/` (version 1 is the initial MVP; version 2+ are post-MVP
+enhancement cycles — see Stage 10), with a top-level `spec-to-prod/versions.md` tracking the
+current version number, and a `workflow_state.md` inside each version's folder recording that
+version's stage/gate status. Before starting any work, check whether `spec-to-prod/versions.md`
+already exists — if it does, read it and the current version's `workflow_state.md` and resume
+exactly where that version left off instead of restarting at Stage 1. Update `workflow_state.md`
+immediately after every stage transition or gate decision.
+
 **Stage 1 — Spec + Non-Functional Requirements.** Draft `spec.md`: Problem Statement, Goals,
 Non-Goals, User Stories ("As a ___, I want ___, so that ___"), Acceptance Criteria per story, and
 a distinct Non-Functional Requirements section (performance, scale, security, availability,
@@ -63,3 +72,11 @@ clear pass/fail summary.
 **Stage 9 — Ready for product testing.** Summarize what was built, confirm the suite is green,
 and hand back explicitly: "This is ready for your review as the product owner." Never describe it
 as shipped or fully done — that call belongs to the user.
+
+**Stage 10 — Post-MVP enhancement cycles.** Once a version reaches Stage 9, the pipeline for it is
+done, but the project isn't. A new feature request opens a new version
+(`spec-to-prod/<N+1>/`, recorded in `versions.md`), amending the prior version's
+`spec.md`/scenarios/prototype with the addition rather than restarting from scratch or editing the
+shipped version in place. Run the same three approval gates, scoped to the delta — a small
+addition gets a short delta review, a module-sized enhancement gets the same full rigor as the
+original MVP. Stages 6-9 for the new version implement, test, and ship only the delta.

@@ -20,6 +20,89 @@ If the idea is too vague to draft even a first-pass spec (e.g. one sentence with
 problem), ask 1-2 sharp clarifying questions before drafting anything — but don't over-ask; a
 rough idea is expected to be rough.
 
+## Durable rule — Versioned directory structure + workflow state (resume across sessions)
+
+This skill has no memory of its own between sessions — a fresh session invoking this skill again
+knows nothing about work already done unless it's written to disk. To make the pipeline
+**resumable rather than silently restarted from Stage 1**, and to keep each enhancement cycle
+after the initial MVP cleanly separated, every project's spec-to-product artifacts live under a
+versioned directory tree, **not** as flat files at the project root:
+
+```
+<project-root>/spec-to-prod/
+  versions.md              ← master index: current version number, one-line label + status per version
+  1/                        ← version 1 is always the initial MVP
+    spec.md
+    features/*.feature
+    prototype.html
+    design.md
+    implementation_plan.md
+    workflow_state.md
+  2/                        ← version 2+ are post-MVP enhancement cycles (see Stage 10 below)
+    ... same shape ...
+```
+
+Every path referenced elsewhere in this document (`spec.md`, `features/*.feature`,
+`prototype.html`, `design.md`, `implementation_plan.md`) means that file **inside the current
+version's numbered folder** — `spec-to-prod/<N>/spec.md`, etc. — never a flat file at the project
+root.
+
+**On every invocation of this skill, before doing anything else**: check whether
+`spec-to-prod/versions.md` already exists in the target project directory.
+- **If it exists**: read it to find the current version number, then read that version's
+  `workflow_state.md` for its exact stage/gate status. Report this to the user and **resume from
+  there** — do not restart Stage 1, do not re-draft `spec.md` from scratch, and do not treat the
+  invocation's argument as a brand-new idea unless the user explicitly says they want to start
+  over (or is clearly asking for a new enhancement — see Stage 10). Read the actual stage-output
+  files for their real content; `workflow_state.md` and `versions.md` only track *where things
+  stand*, they never duplicate deliverable content.
+- **If it doesn't exist**: this is a new project. Create `spec-to-prod/versions.md` and
+  `spec-to-prod/1/workflow_state.md` as the very first action, before drafting anything else,
+  seeded with the idea and Stage 1 marked in-progress.
+
+**Update the current version's `workflow_state.md` (and `versions.md`'s status column)
+immediately after every meaningful step** — write-through, not batched at the end of a turn:
+starting a stage, finishing a stage, an approval gate being approved or sent back for changes, and
+any edit to a stage-output file.
+
+**`workflow_state.md` format** — short and scannable, not a duplicate of the deliverables
+themselves:
+
+```markdown
+# Workflow State — <project/idea name> (version <N>)
+
+- Idea / enhancement: <one-line>
+- Started: <date>
+- Last updated: <date>
+
+## Stages
+
+| Stage | Status | Output(s) |
+|---|---|---|
+| 1 — Spec + NFRs | done / in progress / not started | spec.md |
+| 2 — Gherkin scenarios | ... | features/*.feature |
+| 3 — Interactive prototype | ... | prototype.html |
+| Gate 1 | pending / approved \<date\> / changes requested \<date\> | |
+| 4 — Design document | ... | design.md |
+| Gate 2 | ... | |
+| 5 — Implementation plan | ... | implementation_plan.md |
+| Gate 3 | ... | |
+| 6 — Implement | ... | |
+| 7 — Verify tests per increment | ... | |
+| 8 — Full test suite | ... | |
+| 9 — Ready for product testing | ... | |
+
+## Current position
+<1-2 sentences: what's actively being worked, what's pending>
+
+## Next action
+<1 sentence: the very next concrete thing to do or ask>
+```
+
+`workflow_state.md` and `versions.md` are internal tracking, never deliverables presented for
+approval — keep them accurate and current, but don't ask the user to sign off on them the way you
+do `spec.md`/`design.md`/`implementation_plan.md`.
+
 ## Stage 1 — Spec + Non-Functional Requirements (conversational)
 
 Draft a first-pass structured spec as a `spec.md` file with these sections:
@@ -115,3 +198,26 @@ and the full output for anything that failed.
 Summarize what was built (changed/added files), confirm the full suite is green, and hand back to
 the user explicitly: **"This is ready for your review as the product owner."** Do not describe it
 as fully done or shipped — that call belongs to the user.
+
+## Stage 10 — Post-MVP Enhancement Cycles
+
+Once a version reaches Stage 9, the pipeline for that version is done — but the project isn't
+over. When the user comes back with a new feature request, a change, or an addition, **don't**
+edit version 1's files in place and don't treat it as a brand-new project either. Instead:
+
+- **Open a new version**: create `spec-to-prod/<N+1>/` (next integer after the highest existing
+  version), add a row for it in `versions.md`, and set it as the current version.
+- **Amend, don't restart, the living documents**: `spec.md` for the new version starts as a copy
+  of the prior version's `spec.md` with the new module/story/AC *appended* (or an existing section
+  revised), not a fresh document — same for `features/`, and for the prototype (copy forward, then
+  edit only what the enhancement touches). Never re-litigate or re-derive parts of the product the
+  enhancement doesn't touch.
+- **Same three gates, scoped to the delta**: Gate 1 asks the user to approve the *addition* to the
+  spec/scenarios/prototype, not a re-review of the whole product; likewise for Gates 2 and 3 against
+  the new version's `design.md`/`implementation_plan.md`.
+- **Size the ceremony to the change**: a small, well-understood addition can move through the gates
+  quickly with a short delta review; a large, module-sized enhancement deserves the same full
+  rigor as the original MVP. Use judgment, but don't skip a gate just because the change feels
+  small — ask the user if unsure.
+- Stages 6-9 for the new version implement, test, and ship only the delta — the existing MVP code
+  is the starting point, not something rebuilt.

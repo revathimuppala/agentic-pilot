@@ -7,11 +7,16 @@ staged, human-approved pipeline:
 Idea → Spec + NFRs (conversational) → Gherkin scenarios → Interactive HTML prototype →
   [approval] → Design Document → [approval] → Implementation Plan
   (TDD-first, BDD-first, API-first, Clean Code, SOLID, DRY) → [approval] →
-  Implement → Verify Tests (per increment) → Full Test Suite → Ready for Product Testing
+  Implement → Verify Tests (per increment) → Full Test Suite → Ready for Product Testing →
+  Post-MVP Enhancement Cycles (each one repeats the pipeline, scoped to its own delta)
 ```
 
-No stage skips ahead without an explicit human approval. The same workflow content is packaged
-three ways, for whichever AI coding tool you use:
+No stage skips ahead without an explicit human approval. Every stage's output lives under a
+versioned directory (`spec-to-prod/<N>/` — version 1 is the initial MVP, version 2+ are later
+enhancement cycles) tracked by a top-level `spec-to-prod/versions.md` and a per-version
+`workflow_state.md`, so the pipeline resumes exactly where it left off in a brand-new session
+instead of restarting from Stage 1. The same workflow content is packaged three ways, for
+whichever AI coding tool you use:
 
 | Tool | File | Install |
 |---|---|---|
@@ -19,7 +24,7 @@ three ways, for whichever AI coding tool you use:
 | **GitHub Copilot** | [`github-copilot/spec-to-product-instructions.md`](github-copilot/spec-to-product-instructions.md) | Paste the contents into your repo's `.github/copilot-instructions.md` (or a `.github/prompts/` prompt file, if your Copilot setup supports those). Copilot has no dedicated skill-package format, so this is standing instructions rather than an invokable command. |
 | **Any other AI coding tool** | [`generic-playbook.md`](generic-playbook.md) | Paste into whatever custom-instructions / rules / system-prompt mechanism your tool supports (Cursor `.cursorrules`, Windsurf rules, a custom GPT's instructions, etc.). Assumes only file read/write and running a test command. |
 
-All three describe the identical nine-stage pipeline — pick the packaging that matches your tool,
+All three describe the identical ten-stage pipeline — pick the packaging that matches your tool,
 not a different workflow.
 
 ## Why staged, human-approved generation

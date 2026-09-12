@@ -14,6 +14,16 @@ user to approve it, then wait for their actual response before continuing. Never
 a vague "sounds good", or your own judgment that something "looks fine" as approval — ask, and
 wait.
 
+**Resuming across sessions**: don't keep pipeline artifacts as flat files at the project root.
+Instead use a versioned directory, `spec-to-prod/<N>/` (version 1 is the initial MVP; version 2+
+are post-MVP enhancement cycles — see step 10), with a top-level `spec-to-prod/versions.md`
+tracking the current version number, and a `workflow_state.md` inside each version's folder
+recording that version's stage/gate status. Before starting any work, check whether
+`spec-to-prod/versions.md` already exists — if it does, read it and the current version's
+`workflow_state.md` and resume exactly where that version left off instead of restarting at step
+1. Update `workflow_state.md` immediately after every stage transition or gate decision, not just
+at the end of a session.
+
 1. **Spec + Non-Functional Requirements** — write `spec.md` with: Problem Statement, Goals,
    Non-Goals/Out of Scope, User Stories ("As a ___, I want ___, so that ___"), Acceptance
    Criteria per story, and a separate Non-Functional Requirements section (performance, scale,
@@ -61,3 +71,11 @@ wait.
 9. **Ready for product testing** — summarize what was built, confirm the full suite is green,
    and hand back explicitly: "This is ready for your review as the product owner." Never
    describe it as shipped or fully done — that call belongs to the user.
+
+10. **Post-MVP enhancement cycles** — once a version reaches step 9, the pipeline for it is done,
+    but the project isn't. A new feature request opens a new version (`spec-to-prod/<N+1>/`,
+    recorded in `versions.md`), amending the prior version's `spec.md`/scenarios/prototype with the
+    addition rather than restarting from scratch or editing the shipped version in place. Run the
+    same three approval gates, scoped to the delta — a small addition gets a short delta review, a
+    module-sized enhancement gets the same full rigor as the original MVP. Steps 6-9 for the new
+    version implement, test, and ship only the delta.
