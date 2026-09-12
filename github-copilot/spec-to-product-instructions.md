@@ -27,6 +27,11 @@ already exists — if it does, read it and the current version's `workflow_state
 exactly where that version left off instead of restarting at Stage 1. Update `workflow_state.md`
 immediately after every stage transition or gate decision.
 
+**Raw prompt logging.** Append every user message verbatim to the current version's `prompts.md`
+before taking any other action in response to it — including a mid-turn message that arrives
+while another action is already in flight. Number entries sequentially, quoted verbatim. A new
+version starts a fresh `prompts.md` rather than appending to a prior version's log.
+
 **Stage 1 — Spec + Non-Functional Requirements.** Draft `spec.md`: Problem Statement, Goals,
 Non-Goals, User Stories ("As a ___, I want ___, so that ___"), Acceptance Criteria per story, and
 a distinct Non-Functional Requirements section (performance, scale, security, availability,

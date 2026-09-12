@@ -103,6 +103,15 @@ themselves:
 approval — keep them accurate and current, but don't ask the user to sign off on them the way you
 do `spec.md`/`design.md`/`implementation_plan.md`.
 
+## Durable rule — Raw prompt logging
+
+Append every user message verbatim to the current version's `prompts.md` (inside
+`spec-to-prod/<N>/`) **before** taking any other action in response to it — including a mid-turn
+message that arrives while another action is already in flight. Number entries sequentially,
+quoted verbatim, so `prompts.md` is a complete provenance trail of what was actually asked versus
+what was inferred or assumed. A new version starts a fresh `prompts.md` rather than appending to a
+prior version's log.
+
 ## Stage 1 — Spec + Non-Functional Requirements (conversational)
 
 Draft a first-pass structured spec as a `spec.md` file with these sections:

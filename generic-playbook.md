@@ -24,6 +24,11 @@ recording that version's stage/gate status. Before starting any work, check whet
 1. Update `workflow_state.md` immediately after every stage transition or gate decision, not just
 at the end of a session.
 
+**Raw prompt logging**: append every user message verbatim to the current version's `prompts.md`
+before taking any other action in response to it — including a mid-turn message that arrives
+while another action is already in flight. Number entries sequentially, quoted verbatim. A new
+version starts a fresh `prompts.md` rather than appending to a prior version's log.
+
 1. **Spec + Non-Functional Requirements** — write `spec.md` with: Problem Statement, Goals,
    Non-Goals/Out of Scope, User Stories ("As a ___, I want ___, so that ___"), Acceptance
    Criteria per story, and a separate Non-Functional Requirements section (performance, scale,
