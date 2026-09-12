@@ -112,6 +112,29 @@ quoted verbatim, so `prompts.md` is a complete provenance trail of what was actu
 what was inferred or assumed. A new version starts a fresh `prompts.md` rather than appending to a
 prior version's log.
 
+## Durable rule — HTML rendering of every markdown deliverable
+
+For every markdown deliverable this workflow produces or edits — `spec.md`, `design.md`,
+`implementation_plan.md` inside the current version's `spec-to-prod/<N>/` folder (not the
+`.feature` files or `prototype.html`, which are already meant to be read as-is) — keep a
+same-named `.html` rendition next to it (e.g. `spec.md` → `spec.html`), and keep it open in
+Chrome:
+
+- **Use `render_md.py`** (lives next to this SKILL.md, in the skill's own directory) to do this:
+  `python3 <skill-dir>/render_md.py path/to/spec-to-prod/<N>/spec.md` — it renders a styled HTML
+  page (real typographic hierarchy, not a raw markdown dump; `(assumed — ...)` / `(open — ...)`
+  markers get their own visual treatment) to the same path with a `.html` extension, and opens it
+  in Chrome (`--no-open` to skip the open step; requires `pip install markdown`). Don't hand-roll
+  bespoke HTML per document — extend the script if the rendering needs to change, so every
+  deliverable stays consistent.
+- **On first creation of the doc**: run the script.
+- **On every subsequent edit to the `.md` file** — during Stage 1's conversational iteration, a
+  Stage 4 design revision, or a Stage 5 plan revision — run the script again immediately, in the
+  same turn as the edit, before moving on to anything else, so the visible page never lags behind
+  the source of truth.
+- The `.md` file is still the actual source of truth being negotiated/approved at each gate —
+  the `.html` file is a read-only rendering of it, never edited directly.
+
 ## Stage 1 — Spec + Non-Functional Requirements (conversational)
 
 Draft a first-pass structured spec as a `spec.md` file with these sections:
