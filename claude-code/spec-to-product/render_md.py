@@ -111,7 +111,14 @@ def render(md_path: Path) -> Path:
     title = title_match.group(1).strip() if title_match else md_path.stem
 
     version_dir_name = md_path.parent.name
-    eyebrow = f"spec-to-product · v{version_dir_name}" if version_dir_name.isdigit() else (version_dir_name or "spec-to-product")
+    version_match = re.match(r"^(\d+)(?:-(.+))?$", version_dir_name)
+    if version_match:
+        version_num, version_slug = version_match.group(1), version_match.group(2)
+        eyebrow = f"spec-to-product · v{version_num}"
+        if version_slug:
+            eyebrow += f" ({version_slug.replace('-', ' ')})"
+    else:
+        eyebrow = version_dir_name or "spec-to-product"
 
     out_path = md_path.with_suffix(".html")
     out_path.write_text(

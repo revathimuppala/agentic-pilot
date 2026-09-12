@@ -22,34 +22,42 @@ rough idea is expected to be rough.
 
 ## Durable rule — Versioned directory structure + workflow state (resume across sessions)
 
-This skill has no memory of its own between sessions — a fresh session invoking this skill again
-knows nothing about work already done unless it's written to disk. To make the pipeline
-**resumable rather than silently restarted from Stage 1**, and to keep each enhancement cycle
-after the initial MVP cleanly separated, every project's spec-to-product artifacts live under a
-versioned directory tree, **not** as flat files at the project root:
+This skill has no memory of its own between sessions — a fresh Claude Code session invoking this
+skill again knows nothing about work already done unless it's written to disk. To make the
+pipeline **resumable rather than silently restarted from Stage 1**, and to keep each enhancement
+cycle after the initial MVP cleanly separated, every project's spec-to-product artifacts live
+under a versioned directory tree, **not** as flat files at the project root:
 
 ```
 <project-root>/spec-to-prod/
-  versions.md              ← master index: current version number, one-line label + status per version
-  1/                        ← version 1 is always the initial MVP
-    spec.md
+  versions.md               ← master index: current version, one-line label + status per version
+  1-mvp/                    ← version 1 is always the initial MVP
+    spec.md      spec.html
     features/*.feature
     prototype.html
-    design.md
-    implementation_plan.md
+    design.md    design.html
+    implementation_plan.md  implementation_plan.html
     workflow_state.md
-  2/                        ← version 2+ are post-MVP enhancement cycles (see Stage 10 below)
+    prompts.md
+  2-<slug>/                 ← version 2+ are post-MVP enhancement cycles (see Stage 10 below)
     ... same shape ...
 ```
 
+Each version's folder is named `<N>-<slug>` — a leading integer (the only part any logic parses
+to find "current" or "next" version, via e.g. `^(\d+)-`) plus a short, human-readable kebab-case
+slug (e.g. `2-tax-optimization`) so the directory listing is self-documenting. The slug is a
+mnemonic only, chosen once when the version is created and never re-derived for meaning or
+re-parsed — `versions.md`'s label column is the authoritative description, and the slug is
+allowed to go slightly stale if a version's scope shifts after naming.
+
 Every path referenced elsewhere in this document (`spec.md`, `features/*.feature`,
 `prototype.html`, `design.md`, `implementation_plan.md`) means that file **inside the current
-version's numbered folder** — `spec-to-prod/<N>/spec.md`, etc. — never a flat file at the project
+version's folder** — `spec-to-prod/<N>-<slug>/spec.md`, etc. — never a flat file at the project
 root.
 
 **On every invocation of this skill, before doing anything else**: check whether
 `spec-to-prod/versions.md` already exists in the target project directory.
-- **If it exists**: read it to find the current version number, then read that version's
+- **If it exists**: read it to find the current version's folder name, then read that version's
   `workflow_state.md` for its exact stage/gate status. Report this to the user and **resume from
   there** — do not restart Stage 1, do not re-draft `spec.md` from scratch, and do not treat the
   invocation's argument as a brand-new idea unless the user explicitly says they want to start
@@ -57,7 +65,7 @@ root.
   files for their real content; `workflow_state.md` and `versions.md` only track *where things
   stand*, they never duplicate deliverable content.
 - **If it doesn't exist**: this is a new project. Create `spec-to-prod/versions.md` and
-  `spec-to-prod/1/workflow_state.md` as the very first action, before drafting anything else,
+  `spec-to-prod/1-mvp/workflow_state.md` as the very first action, before drafting anything else,
   seeded with the idea and Stage 1 marked in-progress.
 
 **Update the current version's `workflow_state.md` (and `versions.md`'s status column)
@@ -69,7 +77,7 @@ any edit to a stage-output file.
 themselves:
 
 ```markdown
-# Workflow State — <project/idea name> (version <N>)
+# Workflow State — <project/idea name> (version <N>-<slug>)
 
 - Idea / enhancement: <one-line>
 - Started: <date>
@@ -99,29 +107,29 @@ themselves:
 <1 sentence: the very next concrete thing to do or ask>
 ```
 
-`workflow_state.md` and `versions.md` are internal tracking, never deliverables presented for
-approval — keep them accurate and current, but don't ask the user to sign off on them the way you
-do `spec.md`/`design.md`/`implementation_plan.md`.
+Neither `workflow_state.md` nor `versions.md` is a deliverable presented for approval — unlike
+`spec.md`/`design.md`/`implementation_plan.md`, they are never rendered to HTML, just kept
+accurate and current.
 
 ## Durable rule — Raw prompt logging
 
 Append every user message verbatim to the current version's `prompts.md` (inside
-`spec-to-prod/<N>/`) **before** taking any other action in response to it — including a mid-turn
-message that arrives while another action is already in flight. Number entries sequentially,
-quoted verbatim, so `prompts.md` is a complete provenance trail of what was actually asked versus
-what was inferred or assumed. A new version starts a fresh `prompts.md` rather than appending to a
-prior version's log.
+`spec-to-prod/<N>-<slug>/`) **before** taking any other action in response to it — including a
+mid-turn message that arrives while another action is already in flight. Number entries
+sequentially, quoted verbatim, so `prompts.md` is a complete provenance trail of what was actually
+asked versus what was inferred or assumed. A new version starts a fresh `prompts.md` rather than
+appending to a prior version's log.
 
 ## Durable rule — HTML rendering of every markdown deliverable
 
 For every markdown deliverable this workflow produces or edits — `spec.md`, `design.md`,
-`implementation_plan.md` inside the current version's `spec-to-prod/<N>/` folder (not the
-`.feature` files or `prototype.html`, which are already meant to be read as-is) — keep a
+`implementation_plan.md` (not the `.feature` files or `prototype.html`, which are already meant
+to be read as-is), each inside the current version's `spec-to-prod/<N>-<slug>/` folder — keep a
 same-named `.html` rendition next to it (e.g. `spec.md` → `spec.html`), and keep it open in
 Chrome:
 
 - **Use `render_md.py`** (lives next to this SKILL.md, in the skill's own directory) to do this:
-  `python3 <skill-dir>/render_md.py path/to/spec-to-prod/<N>/spec.md` — it renders a styled HTML
+  `python3 <skill-dir>/render_md.py path/to/spec-to-prod/<N>-<slug>/spec.md` — it renders a styled HTML
   page (real typographic hierarchy, not a raw markdown dump; `(assumed — ...)` / `(open — ...)`
   markers get their own visual treatment) to the same path with a `.html` extension, and opens it
   in Chrome (`--no-open` to skip the open step; requires `pip install markdown`). Don't hand-roll
@@ -237,8 +245,9 @@ Once a version reaches Stage 9, the pipeline for that version is done — but th
 over. When the user comes back with a new feature request, a change, or an addition, **don't**
 edit version 1's files in place and don't treat it as a brand-new project either. Instead:
 
-- **Open a new version**: create `spec-to-prod/<N+1>/` (next integer after the highest existing
-  version), add a row for it in `versions.md`, and set it as the current version.
+- **Open a new version**: create `spec-to-prod/<N+1>-<slug>/` (next integer after the highest
+  existing version's leading number, plus a short new slug describing this enhancement), add a
+  row for it in `versions.md`, and set it as the current version.
 - **Amend, don't restart, the living documents**: `spec.md` for the new version starts as a copy
   of the prior version's `spec.md` with the new module/story/AC *appended* (or an existing section
   revised), not a fresh document — same for `features/`, and for the prototype (copy forward, then

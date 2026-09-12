@@ -12,7 +12,7 @@ Idea → Spec + NFRs (conversational) → Gherkin scenarios → Interactive HTML
 ```
 
 No stage skips ahead without an explicit human approval. Every stage's output lives under a
-versioned directory (`spec-to-prod/<N>/` — version 1 is the initial MVP, version 2+ are later
+versioned directory (`spec-to-prod/<N>-<slug>/` — version 1 is the initial MVP, version 2+ are later
 enhancement cycles) tracked by a top-level `spec-to-prod/versions.md` and a per-version
 `workflow_state.md`, so the pipeline resumes exactly where it left off in a brand-new session
 instead of restarting from Stage 1. The same workflow content is packaged three ways, for

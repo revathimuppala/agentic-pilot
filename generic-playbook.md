@@ -15,7 +15,7 @@ a vague "sounds good", or your own judgment that something "looks fine" as appro
 wait.
 
 **Resuming across sessions**: don't keep pipeline artifacts as flat files at the project root.
-Instead use a versioned directory, `spec-to-prod/<N>/` (version 1 is the initial MVP; version 2+
+Instead use a versioned directory, `spec-to-prod/<N>-<slug>/` (version 1 is the initial MVP; version 2+
 are post-MVP enhancement cycles — see step 10), with a top-level `spec-to-prod/versions.md`
 tracking the current version number, and a `workflow_state.md` inside each version's folder
 recording that version's stage/gate status. Before starting any work, check whether
@@ -78,7 +78,7 @@ version starts a fresh `prompts.md` rather than appending to a prior version's l
    describe it as shipped or fully done — that call belongs to the user.
 
 10. **Post-MVP enhancement cycles** — once a version reaches step 9, the pipeline for it is done,
-    but the project isn't. A new feature request opens a new version (`spec-to-prod/<N+1>/`,
+    but the project isn't. A new feature request opens a new version (`spec-to-prod/<N+1>-<slug>/`,
     recorded in `versions.md`), amending the prior version's `spec.md`/scenarios/prototype with the
     addition rather than restarting from scratch or editing the shipped version in place. Run the
     same three approval gates, scoped to the delta — a small addition gets a short delta review, a

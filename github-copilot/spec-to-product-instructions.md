@@ -19,7 +19,7 @@ marked **STOP** is a hard gate — do not write implementation code past it with
 approval in the chat.
 
 **Resuming across sessions.** Don't keep pipeline artifacts as flat files at the repo root. Use a
-versioned directory, `spec-to-prod/<N>/` (version 1 is the initial MVP; version 2+ are post-MVP
+versioned directory, `spec-to-prod/<N>-<slug>/` (version 1 is the initial MVP; version 2+ are post-MVP
 enhancement cycles — see Stage 10), with a top-level `spec-to-prod/versions.md` tracking the
 current version number, and a `workflow_state.md` inside each version's folder recording that
 version's stage/gate status. Before starting any work, check whether `spec-to-prod/versions.md`
@@ -80,7 +80,7 @@ as shipped or fully done — that call belongs to the user.
 
 **Stage 10 — Post-MVP enhancement cycles.** Once a version reaches Stage 9, the pipeline for it is
 done, but the project isn't. A new feature request opens a new version
-(`spec-to-prod/<N+1>/`, recorded in `versions.md`), amending the prior version's
+(`spec-to-prod/<N+1>-<slug>/`, recorded in `versions.md`), amending the prior version's
 `spec.md`/scenarios/prototype with the addition rather than restarting from scratch or editing the
 shipped version in place. Run the same three approval gates, scoped to the delta — a small
 addition gets a short delta review, a module-sized enhancement gets the same full rigor as the
